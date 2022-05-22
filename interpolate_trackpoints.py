@@ -28,11 +28,13 @@ def interpolate_trackpoints(soup,error_begin,error_end):
   while datetime.strptime(trackpoint_to_interpolate.Time.string,format) < datetime.strptime(end_trackpoint.Time.string,format):
     #get time of the trackpoint
     trackpoint_to_interpolate_time=datetime.strptime(trackpoint_to_interpolate.Time.string,format)
-    print(trackpoint_to_interpolate_time)
+    #print(trackpoint_to_interpolate_time)
+    
     #find the interpolated values
     new_lat = begin_lat + lat_delta * (trackpoint_to_interpolate_time - begin_time) / time_delta
     new_lon = begin_lon + lon_delta * (trackpoint_to_interpolate_time - begin_time) / time_delta
-    print(str(new_lat)+ ', '+ str(new_lon))
+    #print(str(new_lat)+ ', '+ str(new_lon))
+    
     #assign the interpolated values, if they exist
     try: 
       trackpoint_to_interpolate.Position.LatitudeDegrees.string.replace_with(str(new_lat))

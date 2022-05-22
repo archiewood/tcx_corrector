@@ -5,11 +5,21 @@ from datetime import datetime, timedelta
 import plotly.express as px
 import plotly.graph_objects as go
 import random
+from PIL import Image
 
 from tcx_decoder import get_dataframes
 from interpolate_trackpoints import interpolate_trackpoints
 
+with open('style.css') as f:
+    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+
+
 '# TCX File Fixer'
+
+image = Image.open('fixed-route-lg.png')
+
+st.image(image, caption='A route fixed using this app')
 
 st.write('Upload .tcx files from [Garmin](https://connect.garmin.com/modern/activities) with dodgy GPS data and fix it for Strava.')
 st.write('This should also (to some extent) fix issues with erroneous pace.')
@@ -23,8 +33,9 @@ if tcx_file is not None:
 
     '## Original file'
     st.metric('# Waypoints', '{:,}'.format(points_df.size))
-    'First 5 waypoints:'
-    st.table(points_df.head())
+    
+    #'First 5 waypoints:'
+    #st.table(points_df.head())
 
 
     max_lon=points_df.longitude.max()
@@ -34,10 +45,10 @@ if tcx_file is not None:
 
     max_bound = max(abs(max_lon-min_lon), abs(max_lat-min_lat)) * 111
     zoom = 13 - np.log(max_bound)
-    fig=px.scatter_mapbox(points_df,lat='latitude', lon='longitude', zoom=zoom, hover_data={'time'})
+    fig=px.scatter_mapbox(points_df,lat='latitude', lon='longitude', zoom=zoom, hover_data={'longitude':False, 'latitude':False, 'Time': (points_df.time.dt.strftime('%H:%M:%S'))})
     fig.update_layout(mapbox_style="stamen-toner",margin={'b':0,'l':0,'r':0,'l':0})
     fig.update_traces(marker=dict(size=5))
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, config={"displayModeBar": False,"displaylogo": False})
 
     from bs4 import BeautifulSoup
     soup = BeautifulSoup(tcx_file, 'xml')
@@ -98,18 +109,39 @@ if tcx_file is not None:
                 laps_df_fixed, points_df_fixed = get_dataframes("fixed.tcx")
                 points_df_fixed['time_short']=(points_df_fixed.time.dt.strftime('%Y-%m-%d %H:%M:%S'))
 
-                fig2=px.scatter_mapbox(points_df,lat='latitude', lon='longitude', zoom=zoom, hover_data={'time'})
+                fig2=px.scatter_mapbox(points_df,lat='latitude', lon='longitude', zoom=zoom, hover_data={'longitude':False, 'latitude':False, 'Time': (points_df.time.dt.strftime('%H:%M:%S'))})
                 fig2.update_layout(mapbox_style="stamen-toner",margin={'b':0,'l':0,'r':0,'l':0})
                 fig2.update_traces(marker=dict(size=5, opacity=1))
                 fig2.data[-1].name = 'Original route'
                 fig2.data[-1].showlegend = True
                 fig2.update_layout(legend=dict(yanchor="top",y=0.99,xanchor="right",x=0.99, bordercolor="Black",borderwidth=0.5))
 
-                fig2.add_trace(go.Scattermapbox(name='Edited route', mode='markers+text',lat=points_df_fixed.latitude, lon=points_df_fixed.longitude, hovertext=points_df_fixed.time ,marker={'color':'#FF4B4B','size':3}))
+                fig2.add_trace(go.Scattermapbox(
+                    name='Edited route', 
+                    mode='markers+text',
+                    lat=points_df_fixed.latitude, 
+                    lon=points_df_fixed.longitude, 
+                    hovertext=points_df.time.dt.strftime('%H:%M:%S'),
+                    hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
+                    marker={'color':'#FF4B4B','size':3}))
 
-                #fig2.add_trace(go.Scattermapbox(name='Error start', mode='markers+text',lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']], lon=points_df_fixed.longitude[points_df_fixed.time_short==error_start_time_slider] ,marker={'color':'#2ca02c','size':10}))
-                #fig2.add_trace(go.Scattermapbox(name='Error end', mode='markers+text',lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']], lon=points_df_fixed.longitude[points_df_fixed.time_short==error_end_time_slider] ,marker={'color':'#2ca02c','size':10}))
-                st.plotly_chart(fig2)
+                fig2.add_trace(go.Scattermapbox(
+                    name='Error start', 
+                    mode='markers+text',
+                    lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']], 
+                    lon=points_df_fixed.longitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']],
+                    hovertext=points_df.time.dt.strftime('%H:%M:%S'),
+                    hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
+                    marker={'color':'#2ca02c','size':10}))
+                fig2.add_trace(go.Scattermapbox(
+                    name='Error end', 
+                    mode='markers+text',
+                    lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']], 
+                    lon=points_df_fixed.longitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']] ,
+                    hovertext=points_df.time.dt.strftime('%H:%M:%S'),
+                    hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
+                    marker={'color':'#2ca02c','size':10}))
+                st.plotly_chart(fig2, config={"displayModeBar": False,"displaylogo": False})
 
             with open("fixed.tcx", "r") as fixed_tcx_file:
                 st.download_button('Download fixed .tcx file', fixed_tcx_file, file_name='fixed.tcx')

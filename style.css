@@ -1,0 +1,20 @@
+
+.mapboxgl-map{
+    height: 450px !important;
+    top: 0px !important;
+}
+
+.js-plotly-plot .plotly .main-svg{
+    top: -60px !important;
+}
+
+.css-1ht1j8u {
+    z-index: 1;
+    position: relative;
+  }
+
+
+.css-10trblm {
+    z-index: 1;
+    position: relative;
+  }
