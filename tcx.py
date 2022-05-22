@@ -55,6 +55,8 @@ if tcx_file is not None:
     for dist in all_distances:
         dist.decompose()
 
+    '_All times are in UTC_'
+
     error_start_time_slider=st.select_slider('Start time', points_df.time_short)
     error_end_time_slider=st.select_slider('End time', points_df.time_short)
 
@@ -72,8 +74,7 @@ if tcx_file is not None:
 
         'Use the chart above to find areas where the gpx track is erroneous. Record the start and end of the jumpy section with the sliders. A "constant-speed-straight-line" will be drawn between the start point and end point.'
         'Use the &larr; &rarr; keys for fine adjustments.'
-        
-        '_All times are in UTC_'
+    
 
         error_start_time=((datetime.strptime(str(error_start_time_slider),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
         error_end_time=((datetime.strptime(str(error_end_time_slider),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
