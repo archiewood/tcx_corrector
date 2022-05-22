@@ -21,10 +21,10 @@ image = Image.open('fixed-route-lg.png')
 
 st.image(image, caption='A route fixed using this app')
 
-st.write('Upload .tcx files from [Garmin](https://connect.garmin.com/modern/activities) with dodgy GPS data and fix it for Strava.')
-st.write('This should also (to some extent) fix issues with erroneous pace.')
+st.write('Upload .tcx files from [Garmin](https://connect.garmin.com/modern/activities) (Website not App) with dodgy GPS data and fix it for Strava.')
+st.write('This should fix issues with erroneous paces and distances.')
 
-tcx_file=st.file_uploader('Upload a tcx file', type=['tcx'], accept_multiple_files=False, key=None, help='You can download the file from Garmin connect or Strava')
+tcx_file=st.file_uploader('Upload a tcx file', type=['tcx'], accept_multiple_files=False, key=None, help='You can download the file from Garmin connect')
 
 
 if tcx_file is not None:
