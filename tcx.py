@@ -86,68 +86,72 @@ if tcx_file is not None:
         'Use the chart above to find areas where the GPS track is erroneous. Record the start and end of the erroneous section with the sliders. A "constant-speed-straight-line" will be drawn between the start point and end point.'
         'Use the &larr; &rarr; keys for fine adjustments.'
     
+        if st.button('Process File'):
+            error_start_time=((datetime.strptime(str(st.session_state['error_start_time_slider']),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
+            error_end_time=((datetime.strptime(str(st.session_state['error_end_time_slider']),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
+            interpolate_trackpoints(soup,error_start_time,error_end_time)
 
-        error_start_time=((datetime.strptime(str(st.session_state['error_start_time_slider']),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
-        error_end_time=((datetime.strptime(str(st.session_state['error_end_time_slider']),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
+            '## Edited file'
 
-        
-        interpolate_trackpoints(soup,error_start_time,error_end_time)
-
-        '## Edited file'
-
-        if (st.session_state['error_end_time_slider']<=st.session_state['error_start_time_slider']):
-            
-            st.warning('Ensure **Error end** > **Error start** for edited output')          
-        else: 
+            if (st.session_state['error_end_time_slider']<=st.session_state['error_start_time_slider']):
+                
+                st.warning('Ensure **Error end**  >  **Error start** for edited output')          
+            else: 
 
 
-            
-            with st.spinner('Processing file...'):
-                with open("fixed.tcx", "w") as fixed_tcx_file:
-                    fixed_tcx_file.write(str(soup))
+                
+                with st.spinner('Processing file...'):
+                    with open("fixed.tcx", "w") as fixed_tcx_file:
+                        fixed_tcx_file.write(str(soup))
 
-                laps_df_fixed, points_df_fixed = get_dataframes("fixed.tcx")
-                points_df_fixed['time_short']=(points_df_fixed.time.dt.strftime('%Y-%m-%d %H:%M:%S'))
+                    laps_df_fixed, points_df_fixed = get_dataframes("fixed.tcx")
+                    points_df_fixed['time_short']=(points_df_fixed.time.dt.strftime('%Y-%m-%d %H:%M:%S'))
 
-                fig2=px.scatter_mapbox(points_df,lat='latitude', lon='longitude', zoom=zoom, hover_data={'longitude':False, 'latitude':False, 'Time': (points_df.time.dt.strftime('%H:%M:%S'))})
-                fig2.update_layout(mapbox_style="stamen-toner",margin={'b':0,'l':0,'r':0,'l':0})
-                fig2.update_traces(marker=dict(size=5, opacity=1))
-                fig2.data[-1].name = 'Original route'
-                fig2.data[-1].showlegend = True
-                fig2.update_layout(legend=dict(yanchor="top",y=0.99,xanchor="right",x=0.99, bordercolor="Black",borderwidth=0.5))
+                    fig2=px.scatter_mapbox(points_df,lat='latitude', lon='longitude', zoom=zoom, hover_data={'longitude':False, 'latitude':False, 'Time': (points_df.time.dt.strftime('%H:%M:%S'))})
+                    fig2.update_layout(mapbox_style="stamen-toner",margin={'b':0,'l':0,'r':0,'l':0})
+                    fig2.update_traces(marker=dict(size=5, opacity=1))
+                    fig2.data[-1].name = 'Original route'
+                    fig2.data[-1].showlegend = True
+                    fig2.update_layout(legend=dict(yanchor="top",y=0.99,xanchor="right",x=0.99, bordercolor="Black",borderwidth=0.5))
 
-                fig2.add_trace(go.Scattermapbox(
-                    name='Edited route', 
-                    mode='markers+text',
-                    lat=points_df_fixed.latitude, 
-                    lon=points_df_fixed.longitude, 
-                    hovertext=points_df.time.dt.strftime('%H:%M:%S'),
-                    hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
-                    marker={'color':'#FF4B4B','size':3}))
+                    fig2.add_trace(go.Scattermapbox(
+                        name='Edited route', 
+                        mode='markers+text',
+                        lat=points_df_fixed.latitude, 
+                        lon=points_df_fixed.longitude, 
+                        hovertext=points_df.time.dt.strftime('%H:%M:%S'),
+                        hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
+                        marker={'color':'#FF4B4B','size':3}))
 
-                fig2.add_trace(go.Scattermapbox(
-                    name='Error start', 
-                    mode='markers+text',
-                    lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']], 
-                    lon=points_df_fixed.longitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']],
-                    hovertext=points_df.time.dt.strftime('%H:%M:%S'),
-                    hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
-                    marker={'color':'#2ca02c','size':10}))
-                fig2.add_trace(go.Scattermapbox(
-                    name='Error end', 
-                    mode='markers+text',
-                    lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']], 
-                    lon=points_df_fixed.longitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']] ,
-                    hovertext=points_df.time.dt.strftime('%H:%M:%S'),
-                    hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
-                    marker={'color':'#2ca02c','size':10}))
-                st.plotly_chart(fig2, config={"displayModeBar": False,"displaylogo": False})
+                    fig2.add_trace(go.Scattermapbox(
+                        name='Error start', 
+                        mode='markers+text',
+                        lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']], 
+                        lon=points_df_fixed.longitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']],
+                        hovertext=points_df.time.dt.strftime('%H:%M:%S'),
+                        hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
+                        marker={'color':'#2ca02c','size':10}))
+                    fig2.add_trace(go.Scattermapbox(
+                        name='Error end', 
+                        mode='markers+text',
+                        lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']], 
+                        lon=points_df_fixed.longitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']] ,
+                        hovertext=points_df.time.dt.strftime('%H:%M:%S'),
+                        hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
+                        marker={'color':'#2ca02c','size':10}))
+                    st.plotly_chart(fig2, config={"displayModeBar": False,"displaylogo": False})
 
-            with open("fixed.tcx", "r") as fixed_tcx_file:
-                st.download_button('Download fixed .tcx file', fixed_tcx_file, file_name='fixed.tcx')
+                with open("fixed.tcx", "r") as fixed_tcx_file:
+                    st.download_button('Download fixed .tcx file', fixed_tcx_file, file_name='fixed.tcx')
 
-            'Upload your fixed track [here](https://www.strava.com/upload/select)'
-
-            '### Known Issues'
-            'If you already have a version of the activity uploaded to Strava, it may not upload the new one as it thinks it is a duplicate. You can fix this by deleting the original from Strava (you can always get the original back from Garmin Connect if needed)'
- 
+                'Upload your fixed track [here](https://www.strava.com/upload/select)'
+                
+                st.warning(
+                '''
+                #### Known Issues
+                
+                * If you already have a version of the activity uploaded to Strava, it may not upload the new one as it thinks it is a duplicate. 
+                * You can fix this by deleting the original from Strava (you can always get the original back from Garmin Connect if needed).
+                * Only one erroneous segment can be fixed at a time. (To fix multiple, you can download the fixed file, and repeat using that!)
+                ''')
+    
