@@ -68,8 +68,8 @@ if tcx_file is not None:
 
     '_All times are in UTC_'
 
-    st.session_state['error_start_time_slider']=st.select_slider('Error start', points_df.time_short)
-    st.session_state['error_end_time_slider']=st.select_slider('Error end', points_df.time_short)
+    error_start_time_slider=st.select_slider('Error start', points_df.time_short)
+    error_end_time_slider=st.select_slider('Error end', points_df.time_short)
 
 
 
@@ -87,13 +87,13 @@ if tcx_file is not None:
         'Use the &larr; &rarr; keys for fine adjustments.'
     
         if st.button('Process File'):
-            error_start_time=((datetime.strptime(str(st.session_state['error_start_time_slider']),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
-            error_end_time=((datetime.strptime(str(st.session_state['error_end_time_slider']),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
+            error_start_time=((datetime.strptime(str(error_start_time_slider),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
+            error_end_time=((datetime.strptime(str(error_end_time_slider),'%Y-%m-%d %H:%M:%S')).strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]+'Z')
             interpolate_trackpoints(soup,error_start_time,error_end_time)
 
             '## Edited file'
 
-            if (st.session_state['error_end_time_slider']<=st.session_state['error_start_time_slider']):
+            if (error_end_time_slider<=error_start_time_slider):
                 
                 st.warning('Ensure **Error end**  >  **Error start** for edited output')          
             else: 
@@ -126,16 +126,16 @@ if tcx_file is not None:
                     fig2.add_trace(go.Scattermapbox(
                         name='Error start', 
                         mode='markers+text',
-                        lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']], 
-                        lon=points_df_fixed.longitude[points_df_fixed.time_short==st.session_state['error_start_time_slider']],
+                        lat=points_df_fixed.latitude[points_df_fixed.time_short==error_start_time_slider], 
+                        lon=points_df_fixed.longitude[points_df_fixed.time_short==error_start_time_slider],
                         hovertext=points_df.time.dt.strftime('%H:%M:%S'),
                         hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
                         marker={'color':'#2ca02c','size':10}))
                     fig2.add_trace(go.Scattermapbox(
                         name='Error end', 
                         mode='markers+text',
-                        lat=points_df_fixed.latitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']], 
-                        lon=points_df_fixed.longitude[points_df_fixed.time_short==st.session_state['error_end_time_slider']] ,
+                        lat=points_df_fixed.latitude[points_df_fixed.time_short==error_end_time_slider], 
+                        lon=points_df_fixed.longitude[points_df_fixed.time_short==error_end_time_slider] ,
                         hovertext=points_df.time.dt.strftime('%H:%M:%S'),
                         hovertemplate='<br>Time:%{hovertext}<br><extra></extra>',
                         marker={'color':'#2ca02c','size':10}))
